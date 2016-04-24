@@ -39,8 +39,12 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('format', true)
                     ->prototype('array')
                     ->beforeNormalization()
-                        ->ifTrue(function ($v) { return is_array($v) && !isset($v['mimeTypes']); })
-                        ->then(function ($v) { return array('mimeTypes' => $v); })
+                        ->ifTrue(function ($v) {
+                            return is_array($v) && !isset($v['mimeTypes']);
+                        })
+                        ->then(function ($v) {
+                            return array('mimeTypes' => $v);
+                        })
                     ->end()
                         ->children()
                             ->arrayNode('mimeTypes')

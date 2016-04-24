@@ -9,88 +9,88 @@ use Lemon\RestBundle\Object\Criteria;
 
 class MongoRepositoryWrapper implements Repository
 {
-	/**
-	 * @var ObjectRepository
-	 */
-	protected $repository;
-	
-	/**
-	 * @var ClassMetadata
-	 */
-	protected $metadata;
+    /**
+     * @var ObjectRepository
+     */
+    protected $repository;
 
-	/**
-	 * @param ObjectRepository $repository
-	 */
-	public function __construct(ObjectRepository $repository)
-	{
-		$this->repository = $repository;
-		$this->metadata = $repository->getClassMetadata(); 
-	}
+    /**
+     * @var ClassMetadata
+     */
+    protected $metadata;
 
-	public function count(Criteria $criteria)
-	{
-		$qb = $this->repository->createQueryBuilder();
-	
-		$this->buildWhereClause($qb, $criteria);
-	
-		$qb->select();
+    /**
+     * @param ObjectRepository $repository
+     */
+    public function __construct(ObjectRepository $repository)
+    {
+        $this->repository = $repository;
+        $this->metadata = $repository->getClassMetadata();
+    }
 
-		return $qb->getQuery()
-		   ->execute()
-		   ->count();
-	}
+    public function count(Criteria $criteria)
+    {
+        $qb = $this->repository->createQueryBuilder();
 
-	/**
-	 * @param Criteria $criteria
-	 */
-	public function search(Criteria $criteria)
-	{
-		$qb = $this->repository->createQueryBuilder();
-	
-		$this->buildWhereClause($qb, $criteria);
-	
-		$qb->select();
-		
-		if ($criteria->getOrderBy()) {
-    	   $qb->sort($criteria->getOrderBy(), $criteria->getOrderDir());
-		}
-		
-		if ($criteria->getOffset()) {
-		   $qb->skip($criteria->getOffset());
-		}
+        $this->buildWhereClause($qb, $criteria);
 
-		if ($criteria->getLimit()) {
-		   $qb->limit($criteria->getLimit());
-		}
-		
-		$cursor = $qb->getQuery()
-		   ->execute();
+        $qb->select();
 
-		$results = array();
+        return $qb->getQuery()
+           ->execute()
+           ->count();
+    }
 
-		foreach ($cursor as $value) {
-			$results[] = $value;
-		}
+    /**
+     * @param Criteria $criteria
+     */
+    public function search(Criteria $criteria)
+    {
+        $qb = $this->repository->createQueryBuilder();
 
-		return $results;
-	}
+        $this->buildWhereClause($qb, $criteria);
 
-	/**
-	 * @param QueryBuilder $qb
-	 * @param Criteria $criteria
-	 */
-	protected function buildWhereClause(Builder $qb, Criteria $criteria)
-	{
+        $qb->select();
+
+        if ($criteria->getOrderBy()) {
+            $qb->sort($criteria->getOrderBy(), $criteria->getOrderDir());
+        }
+
+        if ($criteria->getOffset()) {
+            $qb->skip($criteria->getOffset());
+        }
+
+        if ($criteria->getLimit()) {
+            $qb->limit($criteria->getLimit());
+        }
+
+        $cursor = $qb->getQuery()
+           ->execute();
+
+        $results = array();
+
+        foreach ($cursor as $value) {
+            $results[] = $value;
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param QueryBuilder $qb
+     * @param Criteria $criteria
+     */
+    protected function buildWhereClause(Builder $qb, Criteria $criteria)
+    {
         foreach ($criteria as $key => $value) {
             if ($this->metadata->hasField($key) || $this->metadata->hasAssociation($key)) {
-				$qb->field($key)->equals($value);
-			}
+                $qb->field($key)->equals($value);
+            }
         }
-	}
+    }
 
-	public function findById($id)
-	{
-		return $this->repository->findOneBy(array('id' => $id));
-	}
+    public function findById($id)
+    {
+        return $this->repository->findOneBy(array('id' => $id));
+    }
 }
