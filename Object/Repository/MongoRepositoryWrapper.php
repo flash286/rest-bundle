@@ -82,11 +82,21 @@ class MongoRepositoryWrapper implements Repository
 	 */
 	protected function buildWhereClause(Builder $qb, Criteria $criteria)
 	{
-        foreach ($criteria as $key => $value) {
-            if ($this->metadata->hasField($key) || $this->metadata->hasAssociation($key)) {
+		foreach ($criteria as $key => $value) {
+			if ($this->metadata->hasField($key) || $this->metadata->hasAssociation($key)) {
+				$type = $this->metadata->fieldMappings[$key];
+				if (isset($type['reference']) && $type['reference'] && isset($type['storeAs']) && $type['storeAs'] === ClassMetadataInfo::REFERENCE_STORE_AS_DB_REF_WITH_DB ) {
+					$key = $key . '.$id';
+					$value = new \MongoId($value);
+				}
+
+				if (is_numeric($value)) {
+					$value = (float) $value;
+				}
+
 				$qb->field($key)->equals($value);
 			}
-        }
+		}
 	}
 
 	public function findById($id)
